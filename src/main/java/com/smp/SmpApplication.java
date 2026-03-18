@@ -9,7 +9,7 @@ public class SmpApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(SmpApplication.class, args);
 		
-		//동엽님확인
+		//동엽님확인 2222
 	}
 
 }
