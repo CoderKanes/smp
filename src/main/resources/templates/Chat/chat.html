@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 서비스</title>
+    <style>
+        /* 메인 페이지 스타일과 통일 */
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 40px 0; margin: 0; }
+        .chat-main-container { background: white; width: 550px; padding: 35px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd; }
+        
+        h3 { text-align: center; color: #333; font-size: 26px; margin-top: 0; margin-bottom: 25px; border-bottom: 2px solid #3b5998; padding-bottom: 10px; }
+
+        /* 현재 접속자 영역 */
+        #user-list-area { background-color: #f8faff; padding: 12px; margin-bottom: 15px; border-radius: 5px; font-size: 13px; border: 1px solid #dbe3f0; color: #555; }
+        #user-list-names { font-weight: bold; color: #3b5998; }
+
+        /* 채팅 응답창 */
+        #response { height: 480px; overflow-y: auto; border: 1px solid #e1e1e1; padding: 20px; background: #ffffff; margin-bottom: 20px; border-radius: 8px; }
+
+        /* 스크롤바 디자인 */
+        #response::-webkit-scrollbar { width: 6px; }
+        #response::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
+
+        /* 하단 입력 폼 */
+        #chat-form { display: flex; gap: 8px; align-items: center; }
+        #msg-target { height: 38px; border: 1px solid #ddd; border-radius: 4px; padding: 0 5px; outline: none; }
+        #message { flex: 1; height: 38px; border: 1px solid #ddd; border-radius: 4px; padding: 0 12px; box-sizing: border-box; outline: none; }
+        #message:focus { border-color: #3b5998; }
+        
+        /* 버튼 스타일 */
+        button[type="submit"] { height: 38px; padding: 0 20px; background-color: #3b5998; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button[type="submit"]:hover { background-color: #2d4373; }
+
+        /* 사용자 이름 표시 */
+        .my-name-tag { font-weight: bold; color: #3b5998; font-size: 14px; margin-bottom: 10px; display: block; }
+
+        /* 말풍선 기본 스타일 (JS에서 동적으로 사용) */
+        .msg-bubble { padding: 10px 14px; border-radius: 12px; max-width: 65%; word-break: break-all; font-size: 14px; line-height: 1.5; }
+        .public-bubble { background-color: #eef2f5; border: 1px solid #d1d9e0; }
+        .private-bubble { background-color: #fff9c4; border: 1px solid #fbc02d; }
+        .time-text { font-size: 10px; color: #999; margin-left: 5px; min-width: 35px; }
+    </style>
+</head>
+<body>
+
+<div class="chat-main-container">
+    <h3>채팅 서비스</h3>
+
+    <div id="user-list-area">
+        <strong>● 현재 접속자:</strong> 
+        <span id="user-list-names"></span>
+    </div>
+
+    <div id="response">
+        </div>
+
+    <span class="my-name-tag">나: <span th:text="${username}"></span></span>
+
+    <form id="chat-form">
+       <select id="msg-target">
+          <option value="ALL">전체</option>
+       </select>
+       <input type="text" placeholder="메시지를 입력하세요..." id="message" autocomplete="off" />
+       <button type="submit">전송</button>
+    </form>
+</div>
+
+<script>
+   // 기존 자바스크립트 로직 (그대로 유지)
+   const username = '[[${username}]]';
+   const host = window.location.host;
+   const webSocket = new WebSocket("ws://" + host + "/ws/chat");
+   
+   webSocket.onopen = (event) => {
+       webSocket.send(JSON.stringify({   
+          type: "ENTER", target: "ALL", username: username, message: username + "님이 입장하셨습니다!"
+       }));
+   };
+   
+   webSocket.onmessage = (msg) => {
+      const data = JSON.parse(msg.data);   
+      
+      if (data.type === "USER_LIST") {
+          const userListSpan = document.getElementById("user-list-names");
+          const targetSelect = document.getElementById("msg-target");
+          userListSpan.innerText = (data.userList || data.users).join(", ");
+          
+          targetSelect.innerHTML="<option value='ALL'>전체</option>";
+          (data.userList || data.users).forEach(name => {
+             if(name !== username){
+                const opt = document.createElement("option");
+                opt.value=name; opt.innerText=name;
+                targetSelect.appendChild(opt);
+             }
+          });
+      } 
+      else {
+          const now = new Date();
+          const timeString = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+          const chatRow = document.createElement("div");   
+          chatRow.style.display = "flex";
+          chatRow.style.alignItems = "flex-end"; 
+          chatRow.style.marginBottom = "15px";
+
+          const profileBox = document.createElement("div");
+          profileBox.style.display = "flex";
+          profileBox.style.flexDirection = "column";
+          profileBox.style.alignItems = "center";
+          profileBox.style.marginRight = "10px";
+          profileBox.style.minWidth = "55px";
+
+          const imgElement = document.createElement("img");
+          imgElement.src = data.profileImg || "https://i.pravatar.cc/150?u=" + data.username;
+          imgElement.style.width = "35px";
+          imgElement.style.height = "35px";
+          imgElement.style.borderRadius = "50%";
+          imgElement.style.border = "1px solid #ddd";
+
+          const nameElement = document.createElement("span");
+          nameElement.innerText = data.username;
+          nameElement.style.fontSize = "11px";
+          nameElement.style.marginTop = "3px";
+          nameElement.style.color = "#666";
+
+          profileBox.appendChild(imgElement);
+          profileBox.appendChild(nameElement);
+
+          const bubble = document.createElement("div");
+          bubble.classList.add("msg-bubble");
+          if (data.isPrivate) {
+              bubble.classList.add("private-bubble");
+              bubble.innerText = "[귓속말] " + data.message;
+          } else {
+              bubble.classList.add("public-bubble");
+              bubble.innerText = data.message;
+          }
+
+          const timeElement = document.createElement("span");
+          timeElement.classList.add("time-text");
+          timeElement.innerText = timeString;
+
+          const delBtn = document.createElement("span");
+          delBtn.innerText = " X";
+          delBtn.style.cursor = "pointer";
+          delBtn.style.fontSize = "12px";
+          delBtn.style.marginLeft = "8px";
+          delBtn.style.color = "#ccc";
+          delBtn.onclick = () => chatRow.remove();
+
+          chatRow.appendChild(profileBox);
+          chatRow.appendChild(bubble);
+          chatRow.appendChild(timeElement);
+          chatRow.appendChild(delBtn);
+
+          const responseDiv = document.getElementById("response");
+          responseDiv.appendChild(chatRow);
+          responseDiv.scrollTop = responseDiv.scrollHeight;
+      }
+   };
+
+   document.getElementById("chat-form").addEventListener("submit", e => {
+      e.preventDefault();
+      const target = document.getElementById("msg-target").value;
+      const messageInput = document.getElementById("message");
+      
+      if(messageInput.value.trim() !== "") {
+          webSocket.send(JSON.stringify({   
+             type: "TALK", target: target, username: username, 
+             message: messageInput.value
+          }));
+          messageInput.value = ""; 
+      }
+   });
+</script>
+
+</body>
+</html>

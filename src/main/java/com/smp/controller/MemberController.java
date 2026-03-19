@@ -7,50 +7,46 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping; // 🔥 추가
 import org.springframework.web.bind.annotation.RequestMapping;
 
-@Controller
-@RequestMapping("/member/*")
-public class MemberController {
+import lombok.RequiredArgsConstructor;
+import com.smp.service.MemberService; // 🔥 추가
 
-    @GetMapping("login")
+@Controller
+@RequestMapping("/member")
+@RequiredArgsConstructor // 🔥 추가
+public class MemberController { 
+
+    private final MemberService memberService; // 🔥 추가
+
+    // 로그인 페이지
+    @GetMapping("/login")
     public String loginPage() {
         return "member/login";
     }
 
-    @GetMapping("signup")
+    // 회원가입 페이지
+    @GetMapping("/signup")
     public String signupPage() {
         return "member/signup";
     }
-    @GetMapping("/home")
-    public String home(Model model, @AuthenticationPrincipal OAuth2User principal) {
-        if (principal == null) return "redirect:/login";
 
-        Map<String, Object> attr = principal.getAttributes();
-        String nick = null;
-        String image = null;
+    // 🔥🔥🔥 회원가입 처리 추가 (핵심)
+    @PostMapping("/signup")
+    public String signup(String userid, String password) {
 
-        // 플랫폼별 주머니(Map) 열기
-        if (attr.get("kakao_account") != null) {
-            Map<String, Object> account = (Map<String, Object>) attr.get("kakao_account");
-            Map<String, Object> profile = (Map<String, Object>) account.get("profile");
-            nick = (String) profile.get("nickname");
-            image = (String) profile.get("profile_image_url");
+        memberService.signup(userid, password);
 
-        } else if (attr.get("response") != null) {
-            // 네이버 정보 추출
-            Map<String, Object> response = (Map<String, Object>) attr.get("response");
-            nick = (String) response.get("nickname");
-            image = (String) response.get("profile_image");
-
-        } else {
-            // 구글 정보 추출
-            nick = (String) attr.get("name");
-            image = (String) attr.get("picture");
-        }
-
-        model.addAttribute("nickname", nick);
-        model.addAttribute("profileImage", image);
-        return "main";
+        return "redirect:/member/login";
     }
+
+    
+    @PostMapping("/member/login")
+    public String loginProcess(String username, String password) {
+        // 1. DB에서 사용자 확인 (Service 호출)
+        // 2. 성공하면?
+        return "main"; // templates/main.html 을 찾아가게 됩니다!
+    }
+
 }

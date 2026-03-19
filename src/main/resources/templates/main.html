@@ -1,1 +1,90 @@
-<h1>메인</h1>
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Main 페이지</title>
+    <style>
+        body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 40px 0; margin: 0; }
+        .main-container { background: white; width: 600px; padding: 40px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        
+        /* 상단 타이틀 구역 */
+        .header { text-align: center; margin-bottom: 30px; }
+        .header h1 { font-size: 32px; margin-bottom: 5px; color: #333; }
+        .header p { color: #666; font-size: 14px; }
+
+        /* 섹션 타이틀 (파란 배지) */
+        .section-badge { background-color: #3b5998; color: white; padding: 5px 12px; font-size: 13px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+
+        /* 메인 메뉴 그리드 (3열) */
+        .menu-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 30px; }
+        .menu-item { background: #fff; border: 1px solid #ddd; padding: 15px; text-decoration: none; color: #333; transition: 0.2s; height: 90px; display: flex; flex-direction: column; justify-content: center; }
+        .menu-item:hover { border-color: #3b5998; background-color: #f8faff; }
+        .menu-item .title { font-weight: bold; font-size: 15px; margin-bottom: 5px; }
+        .menu-item .desc { font-size: 11px; color: #888; line-height: 1.4; }
+
+        /* 오늘의 안내 구역 */
+        .info-box { background-color: #f8f9fa; border: 1px solid #ddd; padding: 20px; margin-bottom: 30px; }
+        .info-list { list-style: none; padding: 0; margin: 0; font-size: 13px; color: #444; }
+        .info-list li { margin-bottom: 8px; padding-left: 20px; position: relative; }
+        .info-list li::before { content: '✓'; position: absolute; left: 0; color: #3b5998; font-weight: bold; }
+
+        /* 하단 버튼 구역 */
+        .button-group { display: flex; gap: 10px; }
+        .btn { flex: 1; padding: 12px; border: none; font-weight: bold; cursor: pointer; text-align: center; text-decoration: none; font-size: 14px; }
+        .btn-dark { background-color: #333; color: white; }
+        .btn-blue { background-color: #3b5998; color: white; }
+    </style>
+</head>
+<body>
+
+<div class="main-container">
+    <div class="header">
+        <h1>Main</h1>
+        <p>환영합니다, 님 👨‍💻</p>
+    </div>
+
+    <div class="section-badge">메인 메뉴</div>
+    <div class="menu-grid">
+        <a href="/member/info" class="menu-item">
+            <span class="title">내 정보</span>
+            <span class="desc">회원 정보 조회 및 수정</span>
+        </a>
+        <a href="/chat/room" class="menu-item">
+            <span class="title">채팅</span>
+            <span class="desc">현재 가능한 채팅 확인</span>
+        </a>
+        <a href="/board/list" class="menu-item">
+            <span class="title">게시판</span>
+            <span class="desc">최신 공지 및 지식 공유</span>
+        </a>
+        <a href="/portfolio/list" class="menu-item">
+            <span class="title">포트폴리오</span>
+            <span class="desc">제출한 자료 관리</span>
+        </a>
+        <a href="/qa/list" class="menu-item">
+            <span class="title">Q&A</span>
+            <span class="desc">질의응답</span>
+        </a>
+        <a href="/notice/settings" class="menu-item">
+            <span class="title">알림</span>
+            <span class="desc">알림 설정</span>
+        </a>
+    </div>
+
+    <div class="section-badge">오늘의 안내</div>
+    <div class="info-box">
+        <ul class="info-list">
+            <li>현재 참여 가능한 스터디 모임이 <b>3개</b> 있습니다.</li>
+            <li>다음 정기 모임 일정은 <b>2026-03-25</b> 입니다.</li>
+            <li>프로필 정보가 최신 상태인지 확인해 주세요.</li>
+        </ul>
+    </div>
+
+    <div class="button-group">
+        <a href="/member/info" class="btn btn-dark">내 정보</a>
+        <a href="/member/logout" class="btn btn-blue">로그아웃</a>
+    </div>
+</div>
+
+</body>
+</html>
