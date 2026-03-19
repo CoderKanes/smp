@@ -12,11 +12,11 @@ public class webchattingController {
 	
     @GetMapping("/rooms") 
     public String roomsPage() {
-        return "templates.Chat/rooms"; 
+        return "Chat/rooms"; 
     }
     @GetMapping("/room")
     public String chatRoom(@RequestParam("username") String username, Model model) {
         model.addAttribute("username", username);
-        return "templates.Chat/chat"; 
+        return "chat/chat"; 
     }
 }
