@@ -1,7 +1,6 @@
 package com.smp.service;
 
 import com.smp.entity.MemberEntity;
-import com.smp.entity.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
