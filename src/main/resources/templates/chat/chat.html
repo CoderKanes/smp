@@ -4,37 +4,22 @@
     <meta charset="UTF-8">
     <title>채팅 서비스</title>
     <style>
-        /* 메인 페이지 스타일과 통일 */
+        /* [스타일 부분은 기존과 동일하므로 생략하지만, 복사하실 때는 그대로 두시면 됩니다] */
         body { font-family: 'Malgun Gothic', sans-serif; background-color: #f0f2f5; display: flex; justify-content: center; padding: 40px 0; margin: 0; }
         .chat-main-container { background: white; width: 550px; padding: 35px; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd; }
-        
         h3 { text-align: center; color: #333; font-size: 26px; margin-top: 0; margin-bottom: 25px; border-bottom: 2px solid #3b5998; padding-bottom: 10px; }
-
-        /* 현재 접속자 영역 */
         #user-list-area { background-color: #f8faff; padding: 12px; margin-bottom: 15px; border-radius: 5px; font-size: 13px; border: 1px solid #dbe3f0; color: #555; }
         #user-list-names { font-weight: bold; color: #3b5998; }
-
-        /* 채팅 응답창 */
         #response { height: 480px; overflow-y: auto; border: 1px solid #e1e1e1; padding: 20px; background: #ffffff; margin-bottom: 20px; border-radius: 8px; }
-
-        /* 스크롤바 디자인 */
         #response::-webkit-scrollbar { width: 6px; }
         #response::-webkit-scrollbar-thumb { background: #ccc; border-radius: 10px; }
-
-        /* 하단 입력 폼 */
         #chat-form { display: flex; gap: 8px; align-items: center; }
         #msg-target { height: 38px; border: 1px solid #ddd; border-radius: 4px; padding: 0 5px; outline: none; }
         #message { flex: 1; height: 38px; border: 1px solid #ddd; border-radius: 4px; padding: 0 12px; box-sizing: border-box; outline: none; }
         #message:focus { border-color: #3b5998; }
-        
-        /* 버튼 스타일 */
         button[type="submit"] { height: 38px; padding: 0 20px; background-color: #3b5998; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
         button[type="submit"]:hover { background-color: #2d4373; }
-
-        /* 사용자 이름 표시 */
         .my-name-tag { font-weight: bold; color: #3b5998; font-size: 14px; margin-bottom: 10px; display: block; }
-
-        /* 말풍선 기본 스타일 (JS에서 동적으로 사용) */
         .msg-bubble { padding: 10px 14px; border-radius: 12px; max-width: 65%; word-break: break-all; font-size: 14px; line-height: 1.5; }
         .public-bubble { background-color: #eef2f5; border: 1px solid #d1d9e0; }
         .private-bubble { background-color: #fff9c4; border: 1px solid #fbc02d; }
@@ -51,8 +36,7 @@
         <span id="user-list-names"></span>
     </div>
 
-    <div id="response">
-        </div>
+    <div id="response"></div>
 
     <span class="my-name-tag">나: <span th:text="${username}"></span></span>
 
@@ -66,30 +50,39 @@
 </div>
 
 <script>
-   // 기존 자바스크립트 로직 (그대로 유지)
+   // [주요 수정 포인트] 🖼️
+   // 1. Username (유저네임 / Username): 타임리프 값을 안전하게 가져옵니다.
    const username = '[[${username}]]';
+   console.log("✅ 1단계: 서버와 웹소켓 연결 성공!");  
+   // 2. WebSocket URL (웹소켓 유알엘 / WebSocket URL): 
+   // 주소 형식을 "ws://호스트/ws/chat"으로 정확히 맞춥니다.
    const host = window.location.host;
    const webSocket = new WebSocket("ws://" + host + "/ws/chat");
    
+   // 연결 성공 시 (On Open / 발음: 온 오픈)
    webSocket.onopen = (event) => {
        webSocket.send(JSON.stringify({   
           type: "ENTER", target: "ALL", username: username, message: username + "님이 입장하셨습니다!"
        }));
    };
    
+   // 메시지 수신 시 (On Message / 발음: 온 메시지)
    webSocket.onmessage = (msg) => {
       const data = JSON.parse(msg.data);   
       
       if (data.type === "USER_LIST") {
           const userListSpan = document.getElementById("user-list-names");
           const targetSelect = document.getElementById("msg-target");
-          userListSpan.innerText = (data.userList || data.users).join(", ");
+          
+          // 목록 초기화 및 업데이트
+          const users = data.userList || data.users || [];
+          userListSpan.innerText = users.join(", ");
           
           targetSelect.innerHTML="<option value='ALL'>전체</option>";
-          (data.userList || data.users).forEach(name => {
+          users.forEach(name => {
              if(name !== username){
                 const opt = document.createElement("option");
-                opt.value=name; opt.innerText=name;
+                opt.value = name; opt.innerText = name;
                 targetSelect.appendChild(opt);
              }
           });
@@ -103,6 +96,7 @@
           chatRow.style.alignItems = "flex-end"; 
           chatRow.style.marginBottom = "15px";
 
+          // 프로필 이미지 및 이름 영역
           const profileBox = document.createElement("div");
           profileBox.style.display = "flex";
           profileBox.style.flexDirection = "column";
@@ -126,6 +120,7 @@
           profileBox.appendChild(imgElement);
           profileBox.appendChild(nameElement);
 
+          // 말풍선 (Bubble / 발음: 버블)
           const bubble = document.createElement("div");
           bubble.classList.add("msg-bubble");
           if (data.isPrivate) {
@@ -159,6 +154,7 @@
       }
    };
 
+   // 전송 버튼 클릭 시 (Submit / 발음: 서브밋)
    document.getElementById("chat-form").addEventListener("submit", e => {
       e.preventDefault();
       const target = document.getElementById("msg-target").value;

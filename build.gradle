@@ -25,6 +25,9 @@ repositories {
 }
 
 dependencies {
+	// 채팅 핸들러 부분 추가해야 되는 라이브 러리
+	implementation 'com.fasterxml.jackson.core:jackson-databind'
+	
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 	implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-client'

@@ -23,6 +23,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
+        	.csrf((csrf) -> csrf.disable())
+        	
             .authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/admin/**").hasRole("ADMIN")
 
@@ -36,7 +38,8 @@ public class SecurityConfig {
                         "/member/login",
                         "/member/signup",
                         "/error",
-                        "/chat/**"
+                        "/chat/**",
+                        "/ws/chat/**"
                 ).permitAll()
 
                 .anyRequest().authenticated()
@@ -50,7 +53,8 @@ public class SecurityConfig {
             .formLogin((formLogin) -> formLogin
                 .loginPage("/member/login")
                 .loginProcessingUrl("/member/login")
-                .defaultSuccessUrl("/member/home")
+                .usernameParameter("userId") // ★ 이 한 줄이 추가되었습니다!
+                .defaultSuccessUrl("/main" , true)
                 .permitAll()
             )
 
