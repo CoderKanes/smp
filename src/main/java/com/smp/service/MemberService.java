@@ -5,8 +5,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 @RequiredArgsConstructor
 public class MemberService {
@@ -14,12 +12,24 @@ public class MemberService {
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
 
-    public void saveMembers(List<MemberEntity> memberList) {
-        for (MemberEntity member : memberList) {
-            member.setPassword(passwordEncoder.encode(member.getPassword()));
-            memberRepository.save(member);
-        }
+    // 회원가입
+    public void signup(String userid, String password) {
+
+        MemberEntity member = new MemberEntity();
+
+        member.setUserid(userid);
+
+        // 🔥 비밀번호 암호화
+        member.setPassword(passwordEncoder.encode(password));
+
+        member.setRole("USER");
+
+        memberRepository.save(member);
+    }
+
+    // 로그인용 조회
+    public MemberEntity findByUserid(String userid) {
+        return memberRepository.findByUserid(userid)
+                .orElse(null);
     }
 }
-        
-    
