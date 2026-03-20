@@ -15,48 +15,45 @@ public class MemberController {
 
     private final MemberService memberService;
 
-    // 로그인 페이지
+    // 1. 로그인 페이지 (GET)
     @GetMapping("/login")
     public String loginPage() {
-        return "member/login";
+        return "member/login"; // templates/member/login.html
     }
 
-    // 회원가입 페이지
+    // 2. 회원가입 페이지 (GET)
     @GetMapping("/signup")
     public String signupPage() {
-        return "member/signup";
+        // 경로 대소문자 주의: member로 통일 권장
+        return "member/signup"; 
     }
 
-    // ✅ 회원가입 처리 (하나만 유지)
+    // 3. 회원가입 처리 (POST)
     @PostMapping("/signup")
     public String signup(
             @RequestParam("userid") String userid,
             @RequestParam("password") String password) {
 
         memberService.signup(userid, password);
+        // 회원가입 후 로그인 페이지로 이동 (경로 소문자 통일)
         return "redirect:/member/login";
     }
 
-    // ✅ 로그인 처리
-    @PostMapping("/login")
-    public String loginProcess(
-            @RequestParam("username") String username,
-            @RequestParam("password") String password) {
+    /* 
+     * ❗ 중요: @PostMapping("/login")은 삭제하거나 주석 처리하세요.
+     * 스프링 시큐리티가 SecurityConfig의 .loginProcessingUrl("/member/login") 설정을 통해
+     * 내부적으로 로그인 로직을 직접 처리합니다. 컨트롤러에 만들면 충돌이 날 수 있습니다.
+     */
 
-        System.out.println("로그인 시도: " + username);
-
-        // ❗ 실제 로그인은 Spring Security가 처리해야 함
-        return "main";
-    }
-
-    // 메인 페이지
+    // 4. 메인 페이지 (로그인 성공 후 이동할 곳)
     @GetMapping("/main")
     public String mainPage() {
-        return "main";
+        return "main"; // templates/main.html
     }
+
+    // 5. 내 정보 페이지
     @GetMapping("/info")
     public String infoPage() {
         return "member/info";
     }
-    
 }

@@ -16,7 +16,9 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
+import jakarta.persistence.JoinColumn;
 import jakarta.persistence.Lob;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.SequenceGenerator;
 import jakarta.persistence.Table;
@@ -88,6 +90,10 @@ public class SMP_Question {
 	
 	@OneToMany(mappedBy = "smp_Question", cascade = CascadeType.ALL, orphanRemoval = true)
 	private List<SMP_Answer> answerList;
+	
+	@ManyToOne
+	@JoinColumn(name = "author_id")
+	private MemberEntity author;
 	
 	public SMP_Question(String title, String body) {
         this.title = title;
