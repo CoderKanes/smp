@@ -22,48 +22,34 @@
     </style>
 </head>
 <body>
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>회원가입</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div class="signup-container">
+        <h2>회원가입</h2>
+        <form th:action="@{/member/signup}" method="post">
+            
+            <div class="input-box">
+                <label for="userid">아이디</label>
+                <input type="text" id="userid" name="userid" placeholder="아이디를 입력하세요" required>
+            </div>
 
-<div class="signup-container">
-    <h2>회원가입</h2>
+            <div class="input-box">
+                <label for="password">비밀번호</label>
+                <input type="password" id="password" name="password" placeholder="비밀번호를 입력하세요" required>
+            </div>
 
-    <form action="/member/signup" method="post">
-        <div class="input-box">
-            <label>아이디</label>
-            <input type="text" name="userid" placeholder="아이디를 입력하세요" required>
+            <button type="submit" class="submit-btn">가입하기</button>
+        </form>
+
+        <div class="footer-links">
+            이미 회원이신가요? <a th:href="@{/member/login}">로그인 하러가기</a>
         </div>
-
-        <div class="input-box">
-            <label>비밀번호</label>
-            <input type="password" name="password" placeholder="비밀번호를 입력하세요" required>
-        </div>
-
-        <div class="input-box">
-            <label>비밀번호 확인</label>
-            <input type="password" name="passwordConfirm" placeholder="비밀번호를 다시 입력하세요" required>
-        </div>
-
-        <div class="input-box">
-            <label>이메일 주소</label>
-            <input type="email" name="email" placeholder="example@mail.com" required>
-        </div>
-
-        <div class="input-box">
-            <label>생년월일</label>
-            <input type="date" name="birthDate" required>
-        </div>
-
-        <div class="input-box">
-            <label>나이</label>
-            <input type="number" name="age" min="1" max="120" placeholder="숫자로 입력">
-        </div>
-
-        <button type="submit" class="submit-btn">회원가입 완료</button>
-    </form>
-
-    <div class="footer-links">
-        이미 계정이 있으신가요? <a href="/member/login">로그인 하러가기</a>
     </div>
-</div>
-
 </body>
 </html>

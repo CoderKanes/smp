@@ -26,7 +26,7 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/main", "/image/**", "/js/**", "/css/**", "/bootstrap/**",
                         "/question/**", "/member/login", "/member/signup",
-                        "/user/login", "/user/create", "/error", "/qna/**", "/chat/**", "/ws/chat/**"
+                        "/error", "/qna/**", "/chat/**", "/ws/chat/**"
 
                 ).permitAll()
                 .anyRequest().authenticated()
@@ -38,7 +38,6 @@ public class SecurityConfig {
             .formLogin((formLogin) -> formLogin
                 .loginPage("/member/login")
                 .loginProcessingUrl("/member/login")
-                .usernameParameter("userId") // ★ 이 한 줄이 추가되었습니다!
                 .defaultSuccessUrl("/main" , true)
                 .permitAll()
             )
