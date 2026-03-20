@@ -25,9 +25,10 @@ public class SecurityConfig {
 
         http
             .authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/qna/**").permitAll()
+            	.requestMatchers("/admin/**").hasRole("ADMIN")
                 .requestMatchers("/main", "/image/**", "/js/**", "/css/**", "/bootstrap/**",
-                        "/question/**", "/user/login", "/user/create", "/error")
+                        "/question/**", "/user/login", "/user/create", "/error", "/qna/question")
                 .permitAll()
                 .anyRequest().authenticated()
             )
