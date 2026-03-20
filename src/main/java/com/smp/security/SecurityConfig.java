@@ -23,29 +23,18 @@ public class SecurityConfig {
         	
             .authorizeHttpRequests((auth) -> auth
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-
                 .requestMatchers(
-                        "/main",
-                        "/image/**",
-                        "/js/**",
-                        "/css/**",
-                        "/bootstrap/**",
-                        "/question/**",
-                        "/member/login",
-                        "/member/signup",
-                        "/error",
-                        "/chat/**",
-                        "/ws/chat/**"
-                ).permitAll()
+                        "/main", "/image/**", "/js/**", "/css/**", "/bootstrap/**",
+                        "/question/**", "/member/login", "/member/signup",
+                        "/user/login", "/user/create", "/error", "/qna/**", "/chat/**", "/ws/chat/**"
 
+                ).permitAll()
                 .anyRequest().authenticated()
             )
-
             .headers((headers) -> headers
                 .addHeaderWriter(new XFrameOptionsHeaderWriter(
                         XFrameOptionsHeaderWriter.XFrameOptionsMode.SAMEORIGIN))
             )
-
             .formLogin((formLogin) -> formLogin
                 .loginPage("/member/login")
                 .loginProcessingUrl("/member/login")
@@ -53,13 +42,11 @@ public class SecurityConfig {
                 .defaultSuccessUrl("/main" , true)
                 .permitAll()
             )
-
             .logout((logout) -> logout
                 .logoutRequestMatcher(PathPatternRequestMatcher.pathPattern("/member/logout"))
                 .invalidateHttpSession(true)
                 .logoutSuccessUrl("/member/login")
             )
-
             .exceptionHandling((exception) -> exception
                 .accessDeniedPage("/member/login")
             );
