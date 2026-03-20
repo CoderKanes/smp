@@ -54,4 +54,9 @@ public class MemberController {
     public String mainPage() {
         return "main";
     }
+    @GetMapping("/info")
+    public String infoPage() {
+        return "member/info";
+    }
+    
 }
