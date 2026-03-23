@@ -14,13 +14,22 @@
 </head>
 <body class="bg-light">
 
-<div class="container my-5">
+    <div class="container my-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="fw-bold text-primary"><i class="bi bi-chat-dots me-2"></i>Q&A 게시판</h2>
-        <!-- 질문하기 버튼 (로그인 체크는 컨트롤러에서 수행) -->
-        <a th:href="@{/qna/question}" class="btn btn-primary px-4 shadow-sm">
-            <i class="bi bi-pencil-square me-1"></i> 질문하기
-        </a>
+        
+        <!-- 버튼 그룹 -->
+        <div>
+            <!-- [추가] 메인으로 버튼: 홈 아이콘과 함께 배치 -->
+            <a th:href="@{/member/main}" class="btn btn-outline-dark px-4 shadow-sm me-2">
+                <i class="bi bi-house-door me-1"></i> 메인으로
+            </a>
+            
+            <!-- 질문하기 버튼 -->
+            <a th:href="@{/qna/question}" class="btn btn-primary px-4 shadow-sm">
+                <i class="bi bi-pencil-square me-1"></i> 질문하기
+            </a>
+        </div>
     </div>
 
     <div class="card shadow-sm border-0">

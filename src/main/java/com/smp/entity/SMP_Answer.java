@@ -40,6 +40,10 @@ public class SMP_Answer {
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 	
+	// 🔥 작성자 필드 추가 (String으로 간단하게 아이디 저장)
+    @Column(name = "author_userid", length = 50, nullable = false)
+    private String authorUserid;
+	
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "question_id", nullable = false)
 	private SMP_Question smp_Question;
@@ -79,6 +83,10 @@ public class SMP_Answer {
 	 public SMP_AnswerDTO toDto() {
         SMP_AnswerDTO dto = new SMP_AnswerDTO();
         dto.setId(this.getId());
+        
+        //작성자 보내기
+        dto.setAuthorUserid(this.getAuthorUserid());
+        
         dto.setQuestionId(this.getQuestionId());
         dto.setBody(this.getBody());
         dto.setCreatedAt(this.getCreatedAt());

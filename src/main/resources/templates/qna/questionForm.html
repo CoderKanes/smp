@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<!-- 1. 시큐리티 네임스페이스 추가 (필수) -->
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <title>Q&A 질문 작성</title>
@@ -9,10 +10,16 @@
 <div class="container my-5">
     <h2 class="border-bottom py-2" th:text="${questionDTO.id == null} ? '질문 등록' : '질문 수정'"></h2>
     
-    <!-- 컨트롤러의 /qna/question POST 메서드로 데이터 전송 -->
     <form th:action="@{/qna/question}" th:object="${questionDTO}" method="post" class="mt-4">
-        <!-- 수정 시 필수인 ID (hidden) -->
         <input type="hidden" th:field="*{id}">
+
+        <!-- ✅ 2. 작성자 표시 영역 추가 -->
+        <div class="mb-3">
+            <label class="form-label font-weight-bold">작성자</label>
+            <span type="text" class="form-control bg-light" 
+                   sec:authentication="name" readonly>
+            <div class="form-text text-muted">현재 로그인된 계정으로 질문이 등록됩니다.</div>
+        </div>
 
         <div class="mb-3">
             <label th:for="title" class="form-label font-weight-bold">제목</label>
@@ -24,7 +31,8 @@
             <textarea th:field="*{body}" class="form-control" rows="10" placeholder="내용을 상세히 입력해주세요" required></textarea>
         </div>
 
-        <div class="mb-4 form-check">
+        <!-- 관리자만 상단 고정 체크박스를 볼 수 있게 제한 (선택 사항) -->
+        <div sec:authorize="hasRole('ROLE_ADMIN')" class="mb-4 form-check">
             <input type="checkbox" th:field="*{isPinned}" th:value="Y" class="form-check-input" id="pinCheck">
             <label class="form-check-label" for="pinCheck">이 질문을 게시판 상단에 고정합니다.</label>
         </div>
