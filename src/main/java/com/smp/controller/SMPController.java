@@ -10,7 +10,7 @@ import lombok.RequiredArgsConstructor;
 public class SMPController {
 	
 	//메인페이지
-	@GetMapping("/main")
+	@GetMapping({"/", "/main"})
 	public String main() {
 		return "main";
 	}
