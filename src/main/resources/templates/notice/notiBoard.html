@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="|알림 - ${username}|">알림 대시보드</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --surface2: #1a1a24;
+            --border: #1e1e2e;
+            --accent: #6c63ff;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --success: #22c55e;
+            --info: #3b82f6;
+            --warning: #f59e0b;
+            --error: #ef4444;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+        }
+
+        /* 배경 그리드 */
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(108,99,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108,99,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        /* ── Header ── */
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .back-btn {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: var(--text); }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #ff6584);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .username { font-weight: 600; }
+
+        /* 연결 상태 */
+        .sse-status {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-family: 'Space Mono', monospace;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--muted);
+            transition: background 0.3s;
+        }
+
+        .status-dot.connected { background: var(--success); animation: pulse 2s infinite; }
+        .status-dot.error { background: var(--error); }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        /* ── Main ── */
+        main {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ── 통계 카드 ── */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.2rem;
+        }
+
+        .stat-label {
+            font-size: 0.72rem;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-family: 'Space Mono', monospace;
+            margin-bottom: 0.4rem;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .stat-value.highlight { color: var(--accent); }
+
+        /* ── 알림 목록 헤더 ── */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-size: 0.8rem;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+        }
+
+        .read-all-btn {
+            background: none;
+            border: 1px solid var(--border);
+            color: var(--muted);
+            padding: 0.4rem 0.9rem;
+            border-radius: 8px;
+            font-size: 0.78rem;
+            cursor: pointer;
+            font-family: 'Noto Sans KR', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .read-all-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        /* ── 알림 아이템 ── */
+        .notification-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .notification-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            display: flex;
+            align-items: flex-start;
+            gap: 1rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .notification-item.unread {
+            border-color: rgba(108,99,255,0.3);
+            background: rgba(108,99,255,0.04);
+        }
+
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 3px;
+            background: var(--accent);
+            border-radius: 3px 0 0 3px;
+        }
+
+        /* 새 알림 애니메이션 */
+        .notification-item.new-item {
+            animation: slideIn 0.4s ease forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(-16px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .notif-icon {
+            font-size: 1.4rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .notif-content { flex: 1; min-width: 0; }
+
+        .notif-message {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0.3rem;
+        }
+
+        .notif-meta {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .notif-type {
+            font-size: 0.68rem;
+            font-family: 'Space Mono', monospace;
+            padding: 0.15rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .type-INFO    { background: rgba(59,130,246,0.15); color: #93c5fd; }
+        .type-SUCCESS { background: rgba(34,197,94,0.15);  color: #86efac; }
+        .type-WARNING { background: rgba(245,158,11,0.15); color: #fcd34d; }
+        .type-ERROR   { background: rgba(239,68,68,0.15);  color: #fca5a5; }
+
+        .notif-time {
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        .read-btn {
+            background: none;
+            border: none;
+            color: var(--muted);
+            cursor: pointer;
+            font-size: 1rem;
+            padding: 0.2rem;
+            transition: color 0.2s;
+            flex-shrink: 0;
+        }
+
+        .read-btn:hover { color: var(--success); }
+
+        /* 빈 상태 */
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--muted);
+        }
+
+        .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+        .empty-text { font-size: 0.9rem; }
+
+        /* ── 토스트 알림 ── */
+        #toast-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .toast {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.8rem;
+            background: var(--surface2);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1rem 1.2rem;
+            min-width: 300px;
+            max-width: 400px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            animation: toastIn 0.35s ease;
+        }
+
+        .toast.INFO    { border-left: 3px solid var(--info); }
+        .toast.SUCCESS { border-left: 3px solid var(--success); }
+        .toast.WARNING { border-left: 3px solid var(--warning); }
+        .toast.ERROR   { border-left: 3px solid var(--error); }
+
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px) scale(0.95); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .toast-icon { font-size: 1.3rem; flex-shrink: 0; }
+        .toast-body { flex: 1; }
+        .toast-title { font-weight: 600; font-size: 0.85rem; margin-bottom: 0.2rem; }
+        .toast-msg { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+    </style>
+</head>
+<body>
+
+<!-- 헤더 -->
+<header>
+    <div class="header-left">
+        <a href="/main" class="back-btn">← 홈</a>
+        <div class="user-info">
+            <div class="avatar" th:text="${username.substring(0,1).toUpperCase()}">U</div>
+             <span class="username" th:text="${username}">username</span>
+        </div>
+    </div>
+    <div class="sse-status">
+        <div class="status-dot" id="statusDot"></div>
+        <span id="statusText">연결 중...</span>
+    </div>
+</header>
+
+<main>
+    <!-- 통계 -->
+    <div class="stats">
+        <div class="stat-card">
+            <div class="stat-label">전체 알림</div>
+            <div class="stat-value" id="totalCount" th:text="${notifications.size()}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">읽지 않음</div>
+            <div class="stat-value highlight" id="unreadCount" th:text="${unreadCount}">0</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">SSE 상태</div>
+            <div class="stat-value" id="sseStatValue" style="font-size:1.1rem;padding-top:4px;">대기중</div>
+        </div>
+    </div>
+
+    <!-- 알림 목록 -->
+    <div class="section-header">
+        <span class="section-title">알림 목록</span>
+        <button class="read-all-btn" onclick="markAllAsRead()">모두 읽음</button>
+    </div>
+
+    <div class="notification-list" id="notificationList">
+        <!-- 알림 없을 때 -->
+        <div class="empty-state" th:if="${notifications.empty}" id="emptyState">
+            <div class="empty-icon">🔕</div>
+            <div class="empty-text">아직 알림이 없습니다</div>
+        </div>
+
+        <!-- 알림 아이템 (Thymeleaf 렌더링) -->
+        <div th:each="n : ${notifications}"
+             th:id="|notif-${n.id}|"
+             th:class="${n.read ? 'notification-item' : 'notification-item unread'}">
+
+            <span class="notif-icon"
+                  th:text="${n.type == 'SUCCESS' ? '✅' :
+                             n.type == 'WARNING' ? '⚠️' :
+                             n.type == 'ERROR'   ? '❌' : 'ℹ️'}">ℹ️</span>
+
+            <div class="notif-content">
+                <div class="notif-message" th:text="${n.message}">메시지</div>
+                <div class="notif-meta">
+                    <span class="notif-type" th:classappend="|type-${n.type}|" th:text="${n.type}">INFO</span>
+                    <span class="notif-time" th:text="${n.createdAt}">시간</span>
+                </div>
+            </div>
+
+            <button class="read-btn"
+                    th:if="${!n.read}"
+                    th:onclick="|markAsRead(${n.id})|"
+                    title="읽음 처리">✓</button>
+        </div>
+    </div>
+</main>
+
+<!-- 토스트 컨테이너 -->
+<div id="toast-container"></div>
+
+<script th:inline="javascript">
+	const USERNAME = '[[${userid}]]';
+
+    // ── SSE 연결 ──────────────────────────────────────────────
+    let eventSource = null;
+
+    function connectSSE() {
+        const url = `/api/notifications/subscribe/${USERNAME}`;
+        eventSource = new EventSource(url);
+
+        // 연결 성공
+        eventSource.addEventListener('connect', (e) => {
+            setStatus('connected', '실시간 연결됨');
+            document.getElementById('sseStatValue').textContent = '연결됨 ✓';
+        });
+
+        // 알림 수신 ← 핵심!
+        eventSource.addEventListener('notification', (e) => {
+            const data = JSON.parse(e.data);
+            console.log('[SSE] 알림 수신:', data);
+
+            // 1. 목록 맨 위에 추가
+            addNotificationToList(data);
+
+            // 2. 토스트 팝업
+            showToast(data);
+
+            // 3. 카운터 업데이트
+            updateUnreadCount(1);
+        });
+
+        eventSource.onerror = () => {
+            setStatus('error', '연결 끊김 - 재연결 중...');
+            document.getElementById('sseStatValue').textContent = '재연결중';
+            // 브라우저가 자동 재연결 시도
+        };
+    }
+
+    function setStatus(state, text) {
+        const dot = document.getElementById('statusDot');
+        dot.className = 'status-dot ' + state;
+        document.getElementById('statusText').textContent = text;
+    }
+
+    // ── 알림 목록에 아이템 추가 ──────────────────────────────
+    function addNotificationToList(data) {
+        const list = document.getElementById('notificationList');
+
+        // 빈 상태 제거
+        const empty = document.getElementById('emptyState');
+        if (empty) empty.remove();
+
+        const iconMap = { SUCCESS:'✅', WARNING:'⚠️', ERROR:'❌', INFO:'ℹ️' };
+        const icon = iconMap[data.type] || 'ℹ️';
+
+        const item = document.createElement('div');
+        item.id = `notif-${data.id}`;
+        item.className = 'notification-item unread new-item';
+        item.innerHTML = `
+            <span class="notif-icon">${icon}</span>
+            <div class="notif-content">
+                <div class="notif-message">${escapeHtml(data.message)}</div>
+                <div class="notif-meta">
+                    <span class="notif-type type-${data.type}">${data.type}</span>
+                    <span class="notif-time">${data.createdAt}</span>
+                </div>
+            </div>
+            <button class="read-btn" onclick="markAsRead(${data.id})" title="읽음 처리">✓</button>
+        `;
+
+        list.insertBefore(item, list.firstChild);
+
+        // 전체 카운터
+        const total = document.getElementById('totalCount');
+        total.textContent = parseInt(total.textContent) + 1;
+    }
+
+    // ── 토스트 팝업 ──────────────────────────────────────────
+    function showToast(data) {
+        const iconMap = { SUCCESS:'✅', WARNING:'⚠️', ERROR:'❌', INFO:'ℹ️' };
+        const titleMap = { SUCCESS:'성공', WARNING:'경고', ERROR:'오류', INFO:'알림' };
+
+        const toast = document.createElement('div');
+        toast.className = `toast ${data.type}`;
+        toast.innerHTML = `
+            <span class="toast-icon">${iconMap[data.type]}</span>
+            <div class="toast-body">
+                <div class="toast-title">새 알림 — ${titleMap[data.type]}</div>
+                <div class="toast-msg">${escapeHtml(data.message)}</div>
+            </div>
+        `;
+
+        const container = document.getElementById('toast-container');
+        container.appendChild(toast);
+
+        // 4초 후 자동 제거
+        setTimeout(() => {
+            toast.style.animation = 'toastIn 0.3s ease reverse';
+            setTimeout(() => toast.remove(), 300);
+        }, 4000);
+    }
+
+    // ── 읽음 처리 ────────────────────────────────────────────
+    function markAsRead(id) {
+        fetch(`/api/notifications/${id}/read`, { method: 'PATCH' })
+            .then(() => {
+                const item = document.getElementById(`notif-${id}`);
+                if (item) {
+                    item.classList.remove('unread');
+                    const btn = item.querySelector('.read-btn');
+                    if (btn) btn.remove();
+                }
+                updateUnreadCount(-1);
+            });
+    }
+
+    function markAllAsRead() {
+        fetch(`/api/notifications/${USERNAME}/read-all`, { method: 'PATCH' })
+            .then(() => {
+                document.querySelectorAll('.notification-item.unread').forEach(el => {
+                    el.classList.remove('unread');
+                    const btn = el.querySelector('.read-btn');
+                    if (btn) btn.remove();
+                });
+                document.getElementById('unreadCount').textContent = '0';
+            });
+    }
+
+    function updateUnreadCount(delta) {
+        const el = document.getElementById('unreadCount');
+        const current = parseInt(el.textContent) || 0;
+        el.textContent = Math.max(0, current + delta);
+    }
+
+    function escapeHtml(str) {
+        const div = document.createElement('div');
+        div.textContent = str;
+        return div.innerHTML;
+    }
+
+    // 페이지 로드 시 SSE 연결
+    connectSSE();
+</script>
+</body>
+</html>

@@ -2,6 +2,9 @@ package com.smp.service;
 
 import com.smp.entity.MemberEntity;
 import lombok.RequiredArgsConstructor;
+
+import java.util.List;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -32,4 +35,14 @@ public class MemberService {
         return memberRepository.findByUserid(userid)
                 .orElse(null);
     }
+    
+    public List<MemberEntity> findAllUser()  {
+    	return memberRepository.findAll();
+    }
+
+	public MemberEntity findById(Long id) {
+		 return memberRepository.findById(id)
+	                .orElse(null);
+		
+	}
 }

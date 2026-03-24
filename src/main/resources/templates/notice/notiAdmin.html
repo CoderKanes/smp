@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 - 알림 발송</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #0a0a0f;
+            --surface: #13131a;
+            --surface2: #1a1a24;
+            --border: #1e1e2e;
+            --border2: #2a2a3e;
+            --accent: #6c63ff;
+            --accent2: #ff6584;
+            --text: #e8e8f0;
+            --muted: #6b6b80;
+            --success: #22c55e;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                linear-gradient(rgba(108,99,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(108,99,255,0.02) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+        }
+
+        header {
+            position: sticky;
+            top: 0;
+            background: rgba(10,10,15,0.85);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            z-index: 100;
+        }
+
+        .back-btn {
+            color: var(--muted);
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: color 0.2s;
+        }
+        .back-btn:hover { color: var(--text); }
+
+        .header-title {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            color: var(--accent2);
+        }
+
+        main {
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 2rem;
+            position: relative;
+            z-index: 1;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.4rem;
+        }
+
+        .page-desc {
+            color: var(--muted);
+            font-size: 0.85rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ── 폼 ── */
+        .form-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.3rem;
+        }
+
+        label {
+            display: block;
+            font-size: 0.78rem;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 0.5rem;
+        }
+
+        select, textarea {
+            width: 100%;
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 10px;
+            color: var(--text);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.9rem;
+            padding: 0.75rem 1rem;
+            outline: none;
+            transition: border-color 0.2s;
+            appearance: none;
+        }
+
+        select:focus, textarea:focus {
+            border-color: var(--accent);
+        }
+
+        textarea {
+            height: 100px;
+            resize: none;
+        }
+
+        /* 타입 선택 버튼 */
+        .type-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.5rem;
+        }
+
+        .type-btn {
+            background: var(--surface2);
+            border: 1px solid var(--border2);
+            border-radius: 8px;
+            padding: 0.6rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            color: var(--muted);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .type-btn:hover { border-color: var(--border); color: var(--text); }
+
+        .type-btn.active-INFO    { background: rgba(59,130,246,0.1); border-color: #3b82f6; color: #93c5fd; }
+        .type-btn.active-SUCCESS { background: rgba(34,197,94,0.1);  border-color: #22c55e; color: #86efac; }
+        .type-btn.active-WARNING { background: rgba(245,158,11,0.1); border-color: #f59e0b; color: #fcd34d; }
+        .type-btn.active-ERROR   { background: rgba(239,68,68,0.1);  border-color: #ef4444; color: #fca5a5; }
+
+        /* 빠른 메시지 */
+        .quick-msgs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+        }
+
+        .quick-msg {
+            background: rgba(108,99,255,0.08);
+            border: 1px solid rgba(108,99,255,0.15);
+            border-radius: 100px;
+            padding: 0.3rem 0.8rem;
+            font-size: 0.78rem;
+            cursor: pointer;
+            color: var(--muted);
+            transition: all 0.2s;
+        }
+
+        .quick-msg:hover {
+            background: rgba(108,99,255,0.15);
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        /* 전송 버튼 */
+        .submit-btn {
+            width: 100%;
+            background: linear-gradient(135deg, var(--accent), #a78bfa);
+            border: none;
+            border-radius: 10px;
+            color: white;
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 0.5rem;
+        }
+
+        .submit-btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 24px rgba(108,99,255,0.35);
+        }
+
+        .submit-btn:active { transform: none; }
+        .submit-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        /* ── 로그 ── */
+        .log-section h3 {
+            font-size: 0.8rem;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            margin-bottom: 0.8rem;
+        }
+
+        .log-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+            max-height: 280px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.7rem 1rem;
+            font-size: 0.8rem;
+            display: flex;
+            gap: 0.8rem;
+            align-items: flex-start;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .log-time {
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            white-space: nowrap;
+            font-size: 0.72rem;
+        }
+
+        .log-msg { flex: 1; }
+        .log-success { color: var(--success); }
+        .log-error { color: #fca5a5; }
+
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="/main" class="back-btn">← 홈</a>
+    <span class="header-title">⚙️ ADMIN — 알림 발송</span>
+</header>
+
+<main>
+    <h2>알림 발송 패널</h2>
+    <p class="page-desc">특정 사용자에게 실시간 알림을 전송합니다. 사용자가 SSE 연결 중이면 즉시 수신됩니다.</p>
+
+    <div class="form-card">
+        <!-- 수신자 -->
+        <div class="form-group">
+            <label>수신자</label>
+            <select id="receiver">
+                <option value="0">--- All(전체 유저에게 보냅니다) --- </option>
+                <option th:each="user : ${allUsers}"  th:value="${user.id}">[[${user.userid}]]</option>     
+            </select>
+        </div>
+
+        <!-- 알림 타입 -->
+        <div class="form-group">
+            <label>알림 타입</label>
+            <div class="type-buttons">
+                <button class="type-btn active-INFO" onclick="selectType('INFO')">ℹ️ INFO</button>
+                <button class="type-btn" onclick="selectType('SUCCESS')">✅ SUCCESS</button>
+                <button class="type-btn" onclick="selectType('WARNING')">⚠️ WARNING</button>
+                <button class="type-btn" onclick="selectType('ERROR')">❌ ERROR</button>
+            </div>
+            <input type="hidden" id="selectedType" value="INFO">
+        </div>
+
+        <!-- 빠른 메시지 -->
+        <div class="form-group">
+            <label>빠른 메시지</label>
+            <div class="quick-msgs">
+                <button class="quick-msg" onclick="setMsg('새로운 댓글이 달렸습니다.')">💬 새 댓글</button>
+                <button class="quick-msg" onclick="setMsg('주문이 배송 시작되었습니다.')">📦 배송 시작</button>
+                <button class="quick-msg" onclick="setMsg('결제가 성공적으로 완료되었습니다.')">💳 결제 완료</button>
+                <button class="quick-msg" onclick="setMsg('보안 경고: 새로운 로그인이 감지되었습니다.')">🔐 보안 경고</button>
+                <button class="quick-msg" onclick="setMsg('서버 오류가 발생했습니다. 잠시 후 다시 시도해주세요.')">🔥 서버 오류</button>
+            </div>
+        </div>
+
+        <!-- 메시지 입력 -->
+        <div class="form-group">
+            <label>메시지 내용</label>
+            <textarea id="message" placeholder="알림 메시지를 입력하세요..."></textarea>
+        </div>
+
+        <button class="submit-btn" id="sendBtn" onclick="sendNotification()">
+            🚀 알림 전송
+        </button>
+    </div>
+
+    <!-- 전송 로그 -->
+    <div class="log-section">
+        <h3>전송 로그</h3>
+        <div class="log-list" id="logList">
+            <div class="log-item" style="color:var(--muted);font-style:italic;">
+                <span>아직 전송 내역이 없습니다.</span>
+            </div>
+        </div>
+    </div>
+</main>
+
+<script>
+    // ── 타입 선택 ──────────────────────────────────────────
+    function selectType(type) {
+        document.getElementById('selectedType').value = type;
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            btn.className = 'type-btn';
+        });
+        // 클릭된 버튼 찾아 활성화
+        document.querySelectorAll('.type-btn').forEach(btn => {
+            if (btn.textContent.includes(type)) {
+                btn.className = `type-btn active-${type}`;
+            }
+        });
+    }
+
+    function setMsg(text) {
+        document.getElementById('message').value = text;
+    }
+
+    // ── 알림 전송 ──────────────────────────────────────────
+    async function sendNotification() {
+    	const selectElement = document.getElementById('receiver');
+        const receiverName = selectElement.options[selectElement.selectedIndex].text;        
+        const receiver = selectElement.value;        
+        const message  = document.getElementById('message').value.trim();
+        const type     = document.getElementById('selectedType').value;
+        
+        
+
+        if (!message) {
+            addLog('❌ 메시지를 입력해주세요.', false);
+            return;
+        }
+
+        const btn = document.getElementById('sendBtn');
+        btn.disabled = true;
+        btn.textContent = '전송 중...';
+
+        const params = new URLSearchParams({ receiver, message, type });
+
+        try {
+            const res = await fetch(`/api/notifications/send?${params}`, { method: 'POST' });
+            if (res.ok) {
+                const data = await res.json();
+                addLog(`✅ [${type}] → ${receiverName}: "${message}"`, true);
+                document.getElementById('message').value = '';
+            } else {
+                addLog(`❌ 전송 실패 (${res.status})`, false);
+            }
+        } catch (e) {
+            addLog(`❌ 오류: ${e.message}`, false);
+        } finally {
+            btn.disabled = false;
+            btn.textContent = '🚀 알림 전송';
+        }
+    }
+
+    // ── 로그 추가 ──────────────────────────────────────────
+    function addLog(msg, success) {
+        const list = document.getElementById('logList');
+
+        // 초기 안내 제거
+        if (list.firstElementChild && list.firstElementChild.style.fontStyle === 'italic') {
+            list.innerHTML = '';
+        }
+
+        const now = new Date().toLocaleTimeString('ko-KR');
+        const item = document.createElement('div');
+        item.className = `log-item ${success ? 'log-success' : 'log-error'}`;
+        item.innerHTML = `<span class="log-time">${now}</span><span class="log-msg">${msg}</span>`;
+        list.insertBefore(item, list.firstChild);
+    }
+
+    // Enter 단축키
+    document.addEventListener('keydown', (e) => {
+        if (e.ctrlKey && e.key === 'Enter') sendNotification();
+    });
+</script>
+</body>
+</html>
