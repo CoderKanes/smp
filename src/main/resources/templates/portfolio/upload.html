@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" 
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <title>포트폴리오 업로드</title>
+    <style>
+        .upload-container { width: 500px; margin: 50px auto; padding: 20px; border: 1px solid #ccc; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="file"] { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .error-msg { color: red; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+<div class="upload-container">
+    <h2>포트폴리오 등록</h2>
+    
+    <!-- 파일 전송을 위해 반드시 enctype="multipart/form-data" 필요 -->
+    <form th:action="@{/portfolio/upload}" method="post" enctype="multipart/form-data">
+        
+        <div class="form-group">
+            <label for="title">제목</label>
+            <!-- DTO의 필드명 'title'과 일치 -->
+            <input type="text" id="title" name="title" placeholder="포트폴리오 제목을 입력하세요" required>
+        </div>
+
+        <div class="form-group">
+            <label for="file">포트폴리오 파일 (이미지 또는 문서)</label>
+            <!-- DTO의 필드명 'file'과 일치 -->
+            <input type="file" id="file" name="file" required>
+        </div>
+
+        <div th:if="${param.error}" class="form-group">
+            <p class="error-msg">업로드 중 오류가 발생했습니다. 다시 시도해주세요.</p>
+        </div>
+
+        <button type="submit">등록하기</button>
+    </form>
+    
+    <div style="margin-top: 15px; text-align: center; display: flex; justify-content: center; gap: 10px;">
+    <!-- 목록으로 돌아가기 -->
+    <a th:href="@{/portfolio/list}" 
+       style="padding: 8px 15px; background-color: #e9ecef; color: #495057; text-decoration: none; border-radius: 5px; font-size: 0.9em;">
+       목록으로
+    </a>
+    
+    <!-- 메인으로 가기 -->
+    <a th:href="@{/}" 
+       style="padding: 8px 15px; background-color: #f8f9fa; color: #212529; text-decoration: none; border: 1px solid #dee2e6; border-radius: 5px; font-size: 0.9em;">
+       메인으로
+    </a>
+</div>
+</div>
+
+</body>
+</html>

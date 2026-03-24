@@ -8,9 +8,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
 
 import com.smp.entity.SMP_Question;
 
+@Repository
 public interface SMP_QuestionRepository extends JpaRepository<SMP_Question, Long> {
 	
 	 // 1. 최신순 전체 조회 (목록용)
